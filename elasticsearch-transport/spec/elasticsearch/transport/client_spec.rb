@@ -60,23 +60,60 @@ describe Elasticsearch::Transport::Client do
 
   context 'when an encoded api_key is provided' do
     let(:client) do
-      described_class.new(api_key: 'an_api_key')
+      described_class.new(api_key: 'an_api_key', adapter: adapter)
     end
+    let(:authorization_header) do
+      client.transport.connections.first.connection.headers['Authorization']
+    end
+    let(:adapter) { nil }
 
     it 'Adds the ApiKey header to the connection' do
-      expect(client.transport.connections.first.connection.headers['Authorization']).to eq('ApiKey an_api_key')
+      expect(authorization_header).to eq('ApiKey an_api_key')
+    end
+
+    context 'when using Patron' do
+      let(:adapter) { :patron }
+
+      it 'Adds the ApiKey header to the connection' do
+        expect(authorization_header).to eq('ApiKey an_api_key')
+      end
+    end
+
+    context 'when using Typhoeus' do
+      let(:adapter) { :typhoeus }
+
+      it 'Adds the ApiKey header to the connection' do
+        expect(authorization_header).to eq('ApiKey an_api_key')
+      end
+    end
+
+    context 'when using HTTPClient' do
+      let(:adapter) { :httpclient }
+
+      it 'Adds the ApiKey header to the connection' do
+        expect(authorization_header).to eq('ApiKey an_api_key')
+      end
+    end
+
+    context 'when using Net::HTTP::Persistent' do
+      let(:adapter) { :net_http_persistent }
+
+      it 'Adds the ApiKey header to the connection' do
+        expect(authorization_header).to eq('ApiKey an_api_key')
+      end
     end
   end
 
   context 'when an un-encoded api_key is provided' do
     let(:client) do
-      described_class.new(api_key: {id: 'my_id', api_key: 'my_api_key'})
+      described_class.new(api_key: { id: 'my_id', api_key: 'my_api_key' })
+    end
+    let(:authorization_header) do
+      client.transport.connections.first.connection.headers['Authorization']
     end
 
     it 'Adds the ApiKey header to the connection' do
-      expect(
-        client.transport.connections.first.connection.headers['Authorization']
-      ).to eq("ApiKey #{Base64.strict_encode64('my_id:my_api_key')}")
+      expect(authorization_header).to eq("ApiKey #{Base64.strict_encode64('my_id:my_api_key')}")
     end
   end
 
