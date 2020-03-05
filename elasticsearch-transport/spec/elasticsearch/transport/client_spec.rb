@@ -59,6 +59,12 @@ describe Elasticsearch::Transport::Client do
   end
 
   context 'when an encoded api_key is provided' do
+    after(:all) do
+      Object.send(:remove_const, :Patron)
+      Object.send(:remove_const, :Typhoeus)
+      Object.send(:remove_const, :HTTPClient)
+      Object.send(:remove_const, :Net)
+    end
     let(:client) do
       described_class.new(api_key: 'an_api_key', adapter: adapter)
     end
@@ -251,9 +257,11 @@ describe Elasticsearch::Transport::Client do
   end
 
   describe 'adapter' do
+    let(:client) do
+      described_class.new
+    end
 
     context 'when no adapter is specified' do
-
       let(:adapter) do
         client.transport.connections.all.first.connection.builder.handlers
       end
